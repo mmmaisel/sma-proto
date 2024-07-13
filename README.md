@@ -9,7 +9,7 @@ inverters.
 * [ ] High level client for easy integration into applications.
 * [ ] Implement energy-meter protocol.
 * [ ] Implement inverter data readout protocol.
-* [ ] Optional **`no_std`** support for embedded devices.
+* [x] Optional **`no_std`** support for embedded devices.
 * [ ] Verify messages during de-serialization.
 * [ ] Being efficient if possible.
 * [x] Simple Wireshark dissector for debugging on network layer.

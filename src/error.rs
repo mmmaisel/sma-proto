@@ -15,12 +15,15 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-#![cfg_attr(not(feature = "std"), no_std)]
-#![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
-#![forbid(unsafe_code)]
+#[cfg(not(feature = "std"))]
+use core::{fmt::Debug, prelude::rust_2021::derive};
 
-mod cursor;
-mod error;
+/// Errors returned from SMA speedwire protocol processing.
+#[derive(Clone, Debug)]
+pub enum Error {
+    /// The provided buffer is too small.
+    BufferTooSmall { size: usize, expected: usize },
+}
 
-pub use cursor::Cursor;
-pub use error::{Error, Result};
+/// A specialized Result type for SMA speedwire operations.
+pub type Result<T> = core::result::Result<T, Error>;
