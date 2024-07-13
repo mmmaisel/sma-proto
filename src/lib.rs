@@ -21,6 +21,8 @@
 
 mod cursor;
 mod error;
+mod packet;
 
 pub use cursor::Cursor;
 pub use error::{Error, Result};
+pub use packet::{SmaEndpoint, SmaSerde};

@@ -23,6 +23,22 @@ use core::{fmt::Debug, prelude::rust_2021::derive};
 pub enum Error {
     /// The provided buffer is too small.
     BufferTooSmall { size: usize, expected: usize },
+    /// The provided buffer contained unexpected trailing bytes and
+    /// was not completely deserialized.
+    BufferNotConsumed { trailing: usize },
+    /// The processed packet starts with an invalid SMA FOURCC value.
+    InvalidFourCC { fourcc: u32 },
+    /// The packet header length is incorrect.
+    InvalidStartTagLen { len: u16 },
+    /// The start tag value in the common packet header is invalid.
+    InvalidStartTag { tag: u16 },
+    /// The group value in the common packet header is invalid.
+    InvalidGroup { group: u32 },
+    /// The protocol version as indicated in the common packet header
+    /// is unsupported.
+    UnsupportedVersion { version: u16 },
+    /// The padding bytes are not all zero.
+    InvalidPadding { padding: u32 },
 }
 
 /// A specialized Result type for SMA speedwire operations.
