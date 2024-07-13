@@ -1,0 +1,17 @@
+[package]
+authors = ["Max Maisel <max.maisel@posteo.de>"]
+categories = ["encoding", "network-programming", "no-std", "parser-implementations"]
+description = "A Rust implementation of the SMA Speedwire protocol"
+edition = "2021"
+keywords = ["SMA", "speedwire"]
+license = "AGPL-3.0-or-later"
+name = "sma-proto"
+readme = "README.md"
+repository = "https://github.com/mmmaisel/sma-proto/"
+rust-version = "1.78.0"
+version = "0.1.0"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
