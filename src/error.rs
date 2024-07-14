@@ -39,6 +39,8 @@ pub enum Error {
     UnsupportedVersion { version: u16 },
     /// The padding bytes are not all zero.
     InvalidPadding { padding: u32 },
+    /// The OBIS ID encountered is unsupported.
+    UnsupportedObisId { id: u32 },
 }
 
 /// A specialized Result type for SMA speedwire operations.
