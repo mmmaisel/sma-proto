@@ -18,7 +18,15 @@
 
 //! Module for handling the SMA speedwire energy meter sub protocol.
 
-use super::{Cursor, Error, Result, SmaEndpoint, SmaSerde};
+use super::{
+    Cursor, Error, Result, SmaEndpoint, SmaPacketFooter, SmaPacketHeader,
+    SmaSerde,
+};
 
 mod header;
+mod message;
 mod obis;
+
+use header::SmaEmHeader;
+pub use message::SmaEmMessage;
+pub use obis::ObisValue;

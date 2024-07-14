@@ -7,7 +7,7 @@ inverters.
 ## Crate Features and Goals
 
 * [ ] High level client for easy integration into applications.
-* [ ] Implement energy-meter protocol.
+* [x] Implement energy-meter protocol.
 * [ ] Implement inverter data readout protocol.
 * [x] Optional **`no_std`** support for embedded devices.
 * [ ] Verify messages during de-serialization.

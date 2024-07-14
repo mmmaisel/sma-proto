@@ -61,6 +61,16 @@ impl SmaPacketHeader {
     /// SMA energymeter sub-protocol ID.
     pub const SMA_PROTOCOL_EM: u16 = 0x6069;
     const SMA_VERSION: u16 = 0x10;
+
+    pub fn check_protocol(&self, protocol: u16) -> Result<()> {
+        if self.protocol != protocol {
+            return Err(Error::UnsupportedProtocol {
+                protocol: self.protocol,
+            });
+        }
+
+        Ok(())
+    }
 }
 
 impl SmaSerde for SmaPacketHeader {

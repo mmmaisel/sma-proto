@@ -25,6 +25,8 @@ mod packet;
 
 pub mod energymeter;
 
+use packet::{SmaPacketFooter, SmaPacketHeader};
+
 pub use cursor::Cursor;
 pub use error::{Error, Result};
 pub use packet::{SmaEndpoint, SmaSerde};

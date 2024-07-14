@@ -37,10 +37,15 @@ pub enum Error {
     /// The protocol version as indicated in the common packet header
     /// is unsupported.
     UnsupportedVersion { version: u16 },
+    /// The sub-protocol type as indicated in the common packet header
+    /// is unsupported.
+    UnsupportedProtocol { protocol: u16 },
     /// The padding bytes are not all zero.
     InvalidPadding { padding: u32 },
     /// The OBIS ID encountered is unsupported.
     UnsupportedObisId { id: u32 },
+    /// The payload of a packet exceeds the maximum supported length.
+    PayloadTooLarge { len: usize },
 }
 
 /// A specialized Result type for SMA speedwire operations.
