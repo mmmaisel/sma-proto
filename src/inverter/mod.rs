@@ -15,19 +15,14 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-#![cfg_attr(not(feature = "std"), no_std)]
-#![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
-#![forbid(unsafe_code)]
 
-mod cursor;
-mod error;
-mod packet;
+//! Module for handling the SMA speedwire inverter sub protocol.
 
-pub mod energymeter;
-pub mod inverter;
+use super::{Cursor, Error, Result, SmaEndpoint, SmaSerde};
 
-use packet::{SmaPacketFooter, SmaPacketHeader};
+mod cmd;
+mod counter;
+mod header;
 
-pub use cursor::Cursor;
-pub use error::{Error, Result};
-pub use packet::{SmaEndpoint, SmaSerde};
+use cmd::SmaCmdWord;
+use counter::SmaInvCounter;
