@@ -54,6 +54,34 @@ pub struct SmaInvHeader {
 impl SmaInvHeader {
     /// Serialized length of the inveter sub-protocol header.
     pub const LENGTH: usize = 28;
+
+    pub fn check_wordcount(&self, data_len: usize) -> Result<()> {
+        if self.wordcount != (data_len / 4) as u8 {
+            return Err(Error::InvalidWordcount {
+                wordcount: self.wordcount,
+            });
+        }
+
+        Ok(())
+    }
+
+    pub fn check_class(&self, class: u8) -> Result<()> {
+        if self.class != class {
+            return Err(Error::UnsupportedCommandClass { class: self.class });
+        }
+
+        Ok(())
+    }
+
+    pub fn check_opcode(&self, opcode: u32) -> Result<()> {
+        if self.cmd.opcode != opcode {
+            return Err(Error::UnsupportedOpcode {
+                opcode: self.cmd.opcode,
+            });
+        }
+
+        Ok(())
+    }
 }
 
 impl SmaSerde for SmaInvHeader {

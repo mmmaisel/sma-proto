@@ -44,6 +44,13 @@ pub enum Error {
     InvalidPadding { padding: u32 },
     /// The OBIS ID encountered is unsupported.
     UnsupportedObisId { id: u32 },
+    /// The wordcount field in the inverter sub-protocol header data length
+    /// is invalid.
+    InvalidWordcount { wordcount: u8 },
+    /// The class field of this message has an unsupported value.
+    UnsupportedCommandClass { class: u8 },
+    /// The opcode of this message has an unsupported value.
+    UnsupportedOpcode { opcode: u32 },
     /// The payload of a packet exceeds the maximum supported length.
     PayloadTooLarge { len: usize },
 }
