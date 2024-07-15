@@ -17,7 +17,7 @@
 \******************************************************************************/
 use super::{
     Cursor, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter, SmaInvHeader,
-    SmaSerde, SmaPacketFooter, SmaPacketHeader
+    SmaPacketFooter, SmaPacketHeader, SmaSerde,
 };
 #[cfg(not(feature = "std"))]
 use core::{
@@ -249,7 +249,7 @@ mod tests {
         ];
 
         let expected = SmaInvIdentify {
-            dst: SmaEndpoint::app(),
+            dst: SmaEndpoint::dummy(),
             src: SmaEndpoint {
                 susy_id: 0x5678,
                 serial: 0xABCDABCE,
