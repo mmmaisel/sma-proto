@@ -28,6 +28,7 @@ mod counter;
 mod header;
 mod identify;
 mod login;
+mod logout;
 
 use cmd::SmaCmdWord;
 use counter::SmaInvCounter;
@@ -35,3 +36,4 @@ use header::SmaInvHeader;
 
 pub use identify::SmaInvIdentify;
 pub use login::{InvalidPasswordError, SmaInvLogin};
+pub use logout::SmaInvLogout;
