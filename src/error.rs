@@ -55,5 +55,70 @@ pub enum Error {
     PayloadTooLarge { len: usize },
 }
 
+#[cfg(feature = "std")]
+impl std::fmt::Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::BufferTooSmall { size, expected } => {
+                write!(
+                    f,
+                    "The supplied buffer is to small. \
+                    Got {size}, expected at least {expected}"
+                )
+            }
+            Self::BufferNotConsumed { trailing } => {
+                write!(
+                    f,
+                    "The supplied buffer contained {trailing} trailing bytes"
+                )
+            }
+            Self::InvalidFourCC { fourcc } => {
+                write!(f, "Found invalid FOURCC value {fourcc:X}")
+            }
+            Self::InvalidStartTagLen { len } => {
+                write!(f, "Found invalid start tag length {len}")
+            }
+            Self::InvalidStartTag { tag } => {
+                write!(f, "Found invalid start tag value {tag:X}")
+            }
+            Self::InvalidGroup { group } => {
+                write!(f, "Found invalid group {group:X}")
+            }
+            Self::UnsupportedVersion { version } => {
+                write!(f, "Unsupported SMA protocol version {version}")
+            }
+            Self::UnsupportedProtocol { protocol } => {
+                write!(f, "Unsupported SMA sub-protocol {protocol:X}")
+            }
+            Self::InvalidPadding { padding } => {
+                write!(f, "Found non-zero padding value {padding:X}")
+            }
+            Self::UnsupportedObisId { id } => {
+                write!(f, "Unsupported OBIS ID {id:X}")
+            }
+            Self::InvalidWordcount { wordcount } => {
+                write!(
+                    f,
+                    "The word count {wordcount} in the protocol header \
+                    is invalid"
+                )
+            }
+            Self::UnsupportedCommandClass { class } => {
+                write!(f, "Found unsupported command class {class:X}")
+            }
+            Self::UnsupportedOpcode { opcode } => {
+                write!(f, "Found unsupported opcode {opcode:X}")
+            }
+            Self::PayloadTooLarge { len } => {
+                write!(
+                    f,
+                    "The messages payload length {len} exceeds \
+                    the supported maximum"
+                )
+            }
+        }
+    }
+}
+
 /// A specialized Result type for SMA speedwire operations.
 pub type Result<T> = core::result::Result<T, Error>;

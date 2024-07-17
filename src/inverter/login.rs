@@ -33,6 +33,13 @@ use core::{
 #[derive(Clone, Debug)]
 pub struct InvalidPasswordError();
 
+#[cfg(feature = "std")]
+impl std::fmt::Display for InvalidPasswordError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "The supplied password contains invalid characters")
+    }
+}
+
 /// A logical SMA inverter login message.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SmaInvLogin {
