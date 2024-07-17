@@ -10,7 +10,7 @@ inverters.
 * [x] Implement energy-meter protocol.
 * [x] Implement inverter data readout protocol.
 * [x] Optional **`no_std`** support for embedded devices.
-* [ ] Verify messages during de-serialization.
+* [x] Verify messages during de-serialization.
 * [ ] Being efficient if possible.
 * [x] Simple Wireshark dissector for debugging on network layer.
       (Lua script is located in the repository root.)

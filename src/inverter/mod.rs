@@ -33,8 +33,8 @@ mod logout;
 mod meter;
 
 use cmd::SmaCmdWord;
-use counter::SmaInvCounter;
-use header::SmaInvHeader;
+pub use counter::SmaInvCounter;
+pub(crate) use header::SmaInvHeader;
 
 pub use get_day_data::SmaInvGetDayData;
 pub use identify::SmaInvIdentify;
