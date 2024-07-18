@@ -15,23 +15,27 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-#![cfg_attr(not(feature = "std"), no_std)]
-#![doc = include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/README.md"))]
-#![forbid(unsafe_code)]
 
-mod any;
-mod cursor;
-mod error;
-mod packet;
+//! High level tokio based SMA speedwire client.
 
-#[cfg(feature = "client")]
-pub mod client;
-pub mod energymeter;
-pub mod inverter;
+use super::SmaEndpoint;
 
-use packet::{SmaPacketFooter, SmaPacketHeader};
+/// SMA client instance for communication with devices.
+/// This object holds the network independent communication state.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct SmaClient {
+    /// Client SMA endpoint ID.
+    endpoint: SmaEndpoint,
+    /// Current packet number.
+    packet_id: u16,
+}
 
-pub use any::AnySmaMessage;
-pub use cursor::Cursor;
-pub use error::{Error, Result};
-pub use packet::{SmaEndpoint, SmaSerde};
+impl SmaClient {
+    /// Creates a new SmaClient with the given SmaEndpoint as source ID.
+    pub fn new(endpoint: SmaEndpoint) -> Self {
+        Self {
+            endpoint,
+            packet_id: 0,
+        }
+    }
+}

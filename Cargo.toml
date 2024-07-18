@@ -20,4 +20,5 @@ heapless = "0.8.0"
 
 [features]
 default = ["std"]
+client = ["std"]
 std = ["byteorder/std"]
