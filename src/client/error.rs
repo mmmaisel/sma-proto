@@ -16,32 +16,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
 
-//! High level tokio based SMA speedwire client.
-
-use super::{packet::SmaSerde, AnySmaMessage, Cursor, Error, SmaEndpoint};
-
-mod error;
-mod session;
-
-pub use error::ClientError;
-pub use session::SmaSession;
-
-/// SMA client instance for communication with devices.
-/// This object holds the network independent communication state.
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct SmaClient {
-    /// Client SMA endpoint ID.
-    endpoint: SmaEndpoint,
-    /// Current packet number.
-    packet_id: u16,
+/// Errors returned from SMA speedwire client.
+#[derive(Clone, Debug)]
+pub enum ClientError {
+    /// A SMA speedwire protocol error.
+    ProtocolError(crate::Error),
+    /// An operating system IO error.
+    IoError(std::io::ErrorKind),
 }
 
-impl SmaClient {
-    /// Creates a new SmaClient with the given SmaEndpoint as source ID.
-    pub fn new(endpoint: SmaEndpoint) -> Self {
-        Self {
-            endpoint,
-            packet_id: 0,
-        }
+impl From<crate::Error> for ClientError {
+    fn from(e: crate::Error) -> Self {
+        Self::ProtocolError(e)
+    }
+}
+
+impl From<std::io::Error> for ClientError {
+    fn from(e: std::io::Error) -> Self {
+        Self::IoError(e.kind())
     }
 }
