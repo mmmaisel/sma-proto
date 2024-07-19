@@ -27,6 +27,7 @@ use core::{
 };
 
 /// Total inverter energy production at a given timestamp.
+/// May contain invalid "NaN" values.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SmaInvMeterValue {
     /// Unix timestamp of the meter value.
@@ -37,6 +38,11 @@ pub struct SmaInvMeterValue {
 
 impl SmaInvMeterValue {
     pub const LENGTH: usize = 12;
+
+    /// Returns true if the contained value is a valid number.
+    pub fn is_valid(&self) -> bool {
+        self.energy_wh != 0xFFFF_FFFF_FFFF_FFFF
+    }
 }
 
 impl SmaSerde for SmaInvMeterValue {
