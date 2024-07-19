@@ -6,12 +6,12 @@ inverters.
 
 ## Crate Features and Goals
 
-* [ ] High level client for easy integration into applications.
+* [x] High level client for easy integration into applications.
 * [x] Implement energy-meter protocol.
 * [x] Implement inverter data readout protocol.
 * [x] Optional **`no_std`** support for embedded devices.
 * [x] Verify messages during de-serialization.
-* [ ] Being efficient if possible.
+* [x] Being efficient if possible.
 * [x] Simple Wireshark dissector for debugging on network layer.
       (Lua script is located in the repository root.)
 
