@@ -15,10 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{
-    Cursor, Error, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter, SmaSerde,
-};
-use byteorder::BigEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -27,6 +23,10 @@ use core::{
     prelude::rust_2021::derive,
     result::Result::{Err, Ok},
 };
+
+use byteorder_cursor::{BigEndian, Cursor};
+
+use super::{Error, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter, SmaSerde};
 
 /// SMA inverter sub-protocol header.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

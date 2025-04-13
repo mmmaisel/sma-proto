@@ -20,7 +20,6 @@
 #![forbid(unsafe_code)]
 
 mod any;
-mod cursor;
 mod error;
 mod packet;
 
@@ -32,6 +31,5 @@ pub mod inverter;
 use packet::{SmaPacketFooter, SmaPacketHeader};
 
 pub use any::AnySmaMessage;
-pub use cursor::Cursor;
 pub use error::{Error, Result};
 pub use packet::{SmaEndpoint, SmaSerde};

@@ -19,8 +19,7 @@
 //! Module for handling the SMA speedwire inverter sub protocol.
 
 use super::{
-    Cursor, Error, Result, SmaEndpoint, SmaPacketFooter, SmaPacketHeader,
-    SmaSerde,
+    Error, Result, SmaEndpoint, SmaPacketFooter, SmaPacketHeader, SmaSerde,
 };
 
 mod cmd;

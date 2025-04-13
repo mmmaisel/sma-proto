@@ -18,8 +18,6 @@
 
 //! Common SMA packet serialization and deserialization structures and traits.
 
-use super::{Cursor, Error, Result};
-use byteorder::BigEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -28,6 +26,10 @@ use core::{
     prelude::rust_2021::derive,
     result::Result::{Err, Ok},
 };
+
+use byteorder_cursor::{BigEndian, Cursor};
+
+use super::{Error, Result};
 
 /// Interface for (de)serialization of SMA speedwire messages.
 pub trait SmaSerde {

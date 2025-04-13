@@ -15,8 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{Cursor, Result, SmaEndpoint, SmaSerde};
-use byteorder::BigEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -25,6 +23,10 @@ use core::{
     prelude::rust_2021::derive,
     result::Result::Ok,
 };
+
+use byteorder_cursor::{BigEndian, Cursor};
+
+use super::{Result, SmaEndpoint, SmaSerde};
 
 /// SMA energymeter sub-protocol header.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

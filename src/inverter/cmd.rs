@@ -15,8 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{Cursor, Result, SmaSerde};
-use byteorder::BigEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -25,6 +23,10 @@ use core::{
     prelude::rust_2021::derive,
     result::Result::Ok,
 };
+
+use byteorder_cursor::{BigEndian, Cursor};
+
+use super::{Result, SmaSerde};
 
 /// A speedwire command word consisting of an opcode and a channel.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]

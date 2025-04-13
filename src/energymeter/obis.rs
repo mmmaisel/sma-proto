@@ -15,8 +15,9 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{Cursor, Error, Result, SmaSerde};
-use byteorder::BigEndian;
+use byteorder_cursor::{BigEndian, Cursor};
+
+use super::{Error, Result, SmaSerde};
 
 /// A tuple consisting of an OBIS ID and its value.
 #[derive(Clone, Debug, Eq, PartialEq)]

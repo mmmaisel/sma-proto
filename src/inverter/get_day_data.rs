@@ -15,11 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{
-    Cursor, Error, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter,
-    SmaInvHeader, SmaInvMeterValue, SmaPacketFooter, SmaPacketHeader, SmaSerde,
-};
-use byteorder::LittleEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -28,8 +23,15 @@ use core::{
     prelude::rust_2021::derive,
     result::Result::{Err, Ok},
 };
+
+use byteorder_cursor::{Cursor, LittleEndian};
 #[cfg(not(feature = "std"))]
 use heapless::Vec;
+
+use super::{
+    Error, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter, SmaInvHeader,
+    SmaInvMeterValue, SmaPacketFooter, SmaPacketHeader, SmaSerde,
+};
 
 /// A logical GetDayData message resquest/response.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]

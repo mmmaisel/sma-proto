@@ -18,11 +18,13 @@
 #[cfg(not(feature = "std"))]
 use core::{fmt::Debug, prelude::rust_2021::derive};
 
+use byteorder_cursor::BufferTooSmall;
+
 /// Errors returned from SMA speedwire protocol processing.
 #[derive(Clone, Debug)]
 pub enum Error {
     /// The provided buffer is too small.
-    BufferTooSmall { size: usize, expected: usize },
+    BufferTooSmall(BufferTooSmall),
     /// The provided buffer contained unexpected trailing bytes and
     /// was not completely deserialized.
     BufferNotConsumed { trailing: usize },
@@ -59,12 +61,8 @@ pub enum Error {
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            Self::BufferTooSmall { size, expected } => {
-                write!(
-                    f,
-                    "The supplied buffer is to small. \
-                    Got {size}, expected at least {expected}"
-                )
+            Self::BufferTooSmall(e) => {
+                write!(f, "{e}")
             }
             Self::BufferNotConsumed { trailing } => {
                 write!(
@@ -117,6 +115,12 @@ impl std::fmt::Display for Error {
                 )
             }
         }
+    }
+}
+
+impl From<BufferTooSmall> for Error {
+    fn from(e: BufferTooSmall) -> Self {
+        Self::BufferTooSmall(e)
     }
 }
 

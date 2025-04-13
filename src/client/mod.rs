@@ -18,6 +18,8 @@
 
 //! High level tokio based SMA speedwire client.
 
+use std::time::SystemTime;
+
 use super::{
     energymeter::{ObisValue, SmaEmMessage},
     inverter::{
@@ -25,9 +27,8 @@ use super::{
         SmaInvLogout, SmaInvMeterValue,
     },
     packet::SmaSerde,
-    AnySmaMessage, Cursor, Error, SmaEndpoint,
+    AnySmaMessage, Error, SmaEndpoint,
 };
-use std::time::SystemTime;
 
 mod error;
 mod session;

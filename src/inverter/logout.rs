@@ -15,11 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{
-    Cursor, Error, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter,
-    SmaInvHeader, SmaPacketFooter, SmaPacketHeader, SmaSerde,
-};
-use byteorder::LittleEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -27,6 +22,13 @@ use core::{
     fmt::Debug,
     prelude::rust_2021::derive,
     result::Result::{Err, Ok},
+};
+
+use byteorder_cursor::{Cursor, LittleEndian};
+
+use super::{
+    Error, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter, SmaInvHeader,
+    SmaPacketFooter, SmaPacketHeader, SmaSerde,
 };
 
 /// A logical SMA inverter logout message.

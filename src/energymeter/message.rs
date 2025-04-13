@@ -15,12 +15,14 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{
-    Cursor, Error, ObisValue, Result, SmaEmHeader, SmaEndpoint,
-    SmaPacketFooter, SmaPacketHeader, SmaSerde,
-};
+use byteorder_cursor::Cursor;
 #[cfg(not(feature = "std"))]
 use heapless::Vec;
+
+use super::{
+    Error, ObisValue, Result, SmaEmHeader, SmaEndpoint, SmaPacketFooter,
+    SmaPacketHeader, SmaSerde,
+};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 /// A logical SMA energymeter message.

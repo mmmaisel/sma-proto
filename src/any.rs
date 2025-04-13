@@ -15,17 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{
-    cursor::Cursor,
-    energymeter::SmaEmMessage,
-    inverter::{
-        SmaInvGetDayData, SmaInvHeader, SmaInvIdentify, SmaInvLogin,
-        SmaInvLogout,
-    },
-    packet::SmaPacketHeader,
-    Error, Result, SmaSerde,
-};
-use byteorder::BigEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -33,6 +22,18 @@ use core::{
     fmt::Debug,
     prelude::rust_2021::derive,
     result::Result::{Err, Ok},
+};
+
+use byteorder_cursor::{BigEndian, Cursor};
+
+use super::{
+    energymeter::SmaEmMessage,
+    inverter::{
+        SmaInvGetDayData, SmaInvHeader, SmaInvIdentify, SmaInvLogin,
+        SmaInvLogout,
+    },
+    packet::SmaPacketHeader,
+    Error, Result, SmaSerde,
 };
 
 /// Container that can hold any supported SMA speedwire message.

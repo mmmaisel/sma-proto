@@ -15,8 +15,6 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
-use super::{Cursor, Result, SmaSerde};
-use byteorder::LittleEndian;
 #[cfg(not(feature = "std"))]
 use core::{
     clone::Clone,
@@ -25,6 +23,10 @@ use core::{
     prelude::rust_2021::derive,
     result::Result::Ok,
 };
+
+use byteorder_cursor::{Cursor, LittleEndian};
+
+use super::{Result, SmaSerde};
 
 /// Total inverter energy production at a given timestamp.
 /// May contain invalid "NaN" values.

@@ -16,12 +16,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
 
-use super::{AnySmaMessage, ClientError, Cursor, Error, SmaSerde};
-
+use byteorder_cursor::Cursor;
 // Required for set_multicast_if_v4 and set_reuse_address
 use socket2::{Domain, Socket, Type};
 use std::net::{Ipv4Addr, SocketAddrV4};
 use tokio::net::UdpSocket;
+
+use super::{AnySmaMessage, ClientError, Error, SmaSerde};
 
 /// SMA client session instance that holds the network dependent state
 /// for communication with a single unicast device, or a group of multicast
