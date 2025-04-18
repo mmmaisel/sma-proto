@@ -17,8 +17,8 @@ path = "src/lib.rs"
 [dependencies]
 byteorder-cursor = { version = "1.0.0", default-features = false }
 heapless = "0.8.0"
-socket2 = { version = "0.5.7", optional = true }
-tokio = { version = "1.38.0", features = ["macros", "net", "rt", "time"], optional = true }
+socket2 = { version = "0.5.9", optional = true }
+tokio = { version = "1.44.2", features = ["macros", "net", "rt", "time"], optional = true }
 
 [features]
 default = ["std"]
