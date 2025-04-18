@@ -27,5 +27,9 @@ mod message;
 mod obis;
 
 use header::SmaEmHeader;
-pub use message::SmaEmMessage;
+#[cfg(feature = "heapless")]
+pub use message::SmaEmMessageHeapless;
+#[cfg(feature = "std")]
+pub use message::SmaEmMessageStd;
+pub use message::{SmaEmMessage, SmaEmMessageBase};
 pub use obis::ObisValue;

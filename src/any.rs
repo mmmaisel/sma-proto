@@ -27,27 +27,32 @@ use core::{
 use byteorder_cursor::{BigEndian, Cursor};
 
 use super::{
-    energymeter::SmaEmMessage,
+    energymeter::{ObisValue, SmaEmMessageBase},
     inverter::{
-        SmaInvGetDayData, SmaInvHeader, SmaInvIdentify, SmaInvLogin,
-        SmaInvLogout,
+        SmaInvGetDayDataBase, SmaInvHeader, SmaInvIdentify, SmaInvLogin,
+        SmaInvLogout, SmaInvMeterValue,
     },
     packet::SmaPacketHeader,
-    Error, Result, SmaSerde,
+    Error, Result, SmaContainer, SmaSerde,
 };
 
 /// Container that can hold any supported SMA speedwire message.
 #[allow(clippy::large_enum_variant)]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum AnySmaMessage {
-    EmMessage(SmaEmMessage),
-    InvGetDayData(SmaInvGetDayData),
+pub enum AnySmaMessageBase<
+    V: SmaContainer<ObisValue>,
+    W: SmaContainer<SmaInvMeterValue>,
+> {
+    EmMessage(SmaEmMessageBase<V>),
+    InvGetDayData(SmaInvGetDayDataBase<W>),
     InvIdentify(SmaInvIdentify),
     InvLogin(SmaInvLogin),
     InvLogout(SmaInvLogout),
 }
 
-impl SmaSerde for AnySmaMessage {
+impl<V: SmaContainer<ObisValue>, W: SmaContainer<SmaInvMeterValue>> SmaSerde
+    for AnySmaMessageBase<V, W>
+{
     fn serialize(&self, buffer: &mut Cursor<&mut [u8]>) -> Result<()> {
         match self {
             Self::EmMessage(x) => x.serialize(buffer),
@@ -69,7 +74,7 @@ impl SmaSerde for AnySmaMessage {
         let protocol = buffer.peek_u16::<BigEndian>(16);
         let message = match protocol {
             SmaPacketHeader::SMA_PROTOCOL_EM => {
-                Self::EmMessage(SmaEmMessage::deserialize(buffer)?)
+                Self::EmMessage(SmaEmMessageBase::deserialize(buffer)?)
             }
             SmaPacketHeader::SMA_PROTOCOL_INV => {
                 buffer.check_remaining(
@@ -77,8 +82,8 @@ impl SmaSerde for AnySmaMessage {
                 )?;
                 let opcode = buffer.peek_u24::<BigEndian>(43);
                 match opcode {
-                    SmaInvGetDayData::OPCODE => Self::InvGetDayData(
-                        SmaInvGetDayData::deserialize(buffer)?,
+                    SmaInvGetDayDataBase::<W>::OPCODE => Self::InvGetDayData(
+                        SmaInvGetDayDataBase::deserialize(buffer)?,
                     ),
                     SmaInvIdentify::OPCODE => {
                         Self::InvIdentify(SmaInvIdentify::deserialize(buffer)?)
@@ -99,14 +104,37 @@ impl SmaSerde for AnySmaMessage {
     }
 }
 
+#[cfg(feature = "std")]
+/// An [AnySmaMessageBase] using std [Vec] as storage.
+pub type AnySmaMessageStd =
+    AnySmaMessageBase<Vec<ObisValue>, Vec<SmaInvMeterValue>>;
+#[cfg(feature = "heapless")]
+/// An [AnySmaMessageBase] using [heapless::Vec] as storage.
+pub type AnySmaMessageHeapless = AnySmaMessageBase<
+    heapless::Vec<ObisValue, { SmaEmMessageBase::<()>::MAX_RECORD_COUNT }>,
+    heapless::Vec<
+        SmaInvMeterValue,
+        { SmaInvGetDayDataBase::<()>::MAX_RECORD_COUNT },
+    >,
+>;
+
+#[cfg(feature = "std")]
+/// An [AnySmaMessageBase] using default storage based on selected features.
+pub type AnySmaMessage = AnySmaMessageStd;
+#[cfg(not(feature = "std"))]
+/// An [AnySmaMessageBase] using default storage based on selected features.
+pub type AnySmaMessage = AnySmaMessageHeapless;
+
 #[cfg(test)]
 mod tests {
+    use heapless::Vec;
+
     use super::*;
     use crate::{
-        energymeter::ObisValue, inverter::SmaInvCounter, packet::SmaEndpoint,
+        energymeter::{ObisValue, SmaEmMessageHeapless},
+        inverter::{SmaInvCounter, SmaInvGetDayDataHeapless},
+        packet::SmaEndpoint,
     };
-    #[cfg(not(feature = "std"))]
-    use heapless::Vec;
 
     #[test]
     fn test_any_em_message_deserialization() {
@@ -122,7 +150,7 @@ mod tests {
             0x00, 0x00, 0x00, 0x00,
         ];
 
-        let expected = AnySmaMessage::EmMessage(SmaEmMessage {
+        let expected = AnySmaMessageHeapless::EmMessage(SmaEmMessageHeapless {
             src: SmaEndpoint {
                 susy_id: 0xDEAD,
                 serial: 0x11223344,
@@ -130,7 +158,6 @@ mod tests {
             timestamp_ms: 0xAABBCCDD,
             payload: {
                 let mut message = Vec::default();
-                #[allow(clippy::let_unit_value)]
                 let _ = message.push(ObisValue {
                     id: 0x010400,
                     value: 0x01020304,
@@ -140,7 +167,7 @@ mod tests {
         });
 
         let mut cursor = Cursor::new(&serialized[..]);
-        match AnySmaMessage::deserialize(&mut cursor) {
+        match AnySmaMessageHeapless::deserialize(&mut cursor) {
             Err(e) => panic!("AnySmaMessage deserialization failed: {e:?}"),
             Ok(message) => {
                 assert_eq!(expected, message);
@@ -249,7 +276,7 @@ mod tests {
 
     #[test]
     fn serialize_into_too_small_buffer() {
-        let message = SmaInvGetDayData {
+        let message = SmaInvGetDayDataHeapless {
             src: SmaEndpoint::dummy(),
             dst: SmaEndpoint {
                 susy_id: 0x5678,
@@ -265,7 +292,7 @@ mod tests {
             records: Vec::new(),
         };
 
-        let mut buffer = [0u8; SmaInvGetDayData::LENGTH_MIN - 1];
+        let mut buffer = [0u8; SmaInvGetDayDataHeapless::LENGTH_MIN - 1];
         let mut cursor = Cursor::new(&mut buffer[..]);
 
         if let Ok(x) = message.serialize(&mut cursor) {

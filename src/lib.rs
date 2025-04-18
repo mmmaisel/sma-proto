@@ -20,6 +20,7 @@
 #![forbid(unsafe_code)]
 
 mod any;
+mod container;
 mod error;
 mod packet;
 
@@ -28,8 +29,13 @@ pub mod client;
 pub mod energymeter;
 pub mod inverter;
 
+pub use container::SmaContainer;
 use packet::{SmaPacketFooter, SmaPacketHeader};
 
-pub use any::AnySmaMessage;
+#[cfg(feature = "heapless")]
+pub use any::AnySmaMessageHeapless;
+#[cfg(feature = "std")]
+pub use any::AnySmaMessageStd;
+pub use any::{AnySmaMessage, AnySmaMessageBase};
 pub use error::{Error, Result};
 pub use packet::{SmaEndpoint, SmaSerde};

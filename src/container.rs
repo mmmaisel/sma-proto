@@ -1,6 +1,6 @@
 /******************************************************************************\
     sma-proto - A SMA Speedwire protocol library
-    Copyright (C) 2024 Max Maisel
+    Copyright (C) 2024-2025 Max Maisel
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
@@ -15,32 +15,25 @@
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
+use core::{ops::Deref, result::Result};
 
-//! Module for handling the SMA speedwire inverter sub protocol.
+/// Interface to a variable length storage container.
+pub trait SmaContainer<T>: Deref<Target = [T]> + Default {
+    /// Adds an element to the collection.
+    fn push(&mut self, value: T) -> Result<(), T>;
+}
 
-use super::{
-    Error, Result, SmaEndpoint, SmaPacketFooter, SmaPacketHeader, SmaSerde,
-};
-
-mod cmd;
-mod counter;
-mod get_day_data;
-mod header;
-mod identify;
-mod login;
-mod logout;
-mod meter;
-
-use cmd::SmaCmdWord;
-pub use counter::SmaInvCounter;
-pub(crate) use header::SmaInvHeader;
+#[cfg(feature = "std")]
+impl<T> SmaContainer<T> for Vec<T> {
+    fn push(&mut self, value: T) -> Result<(), T> {
+        self.push(value);
+        Ok(())
+    }
+}
 
 #[cfg(feature = "heapless")]
-pub use get_day_data::SmaInvGetDayDataHeapless;
-#[cfg(feature = "std")]
-pub use get_day_data::SmaInvGetDayDataStd;
-pub use get_day_data::{SmaInvGetDayData, SmaInvGetDayDataBase};
-pub use identify::SmaInvIdentify;
-pub use login::{InvalidPasswordError, SmaInvLogin};
-pub use logout::SmaInvLogout;
-pub use meter::SmaInvMeterValue;
+impl<T, const N: usize> SmaContainer<T> for heapless::Vec<T, N> {
+    fn push(&mut self, value: T) -> Result<(), T> {
+        self.push(value)
+    }
+}

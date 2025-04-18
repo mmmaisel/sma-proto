@@ -16,30 +16,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 \******************************************************************************/
 use byteorder_cursor::Cursor;
-#[cfg(not(feature = "std"))]
-use heapless::Vec;
 
 use super::{
     Error, ObisValue, Result, SmaEmHeader, SmaEndpoint, SmaPacketFooter,
     SmaPacketHeader, SmaSerde,
 };
+use crate::SmaContainer;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 /// A logical SMA energymeter message.
-pub struct SmaEmMessage {
+pub struct SmaEmMessageBase<V> {
     /// Source endpoint address.
     pub src: SmaEndpoint,
     /// Overflowing timestamp in milliseconds.
     pub timestamp_ms: u32,
-    #[cfg(not(feature = "std"))]
     /// Vector of OBIS data.
-    pub payload: Vec<ObisValue, { Self::MAX_RECORD_COUNT }>,
-    #[cfg(feature = "std")]
-    /// Vector of OBIS data.
-    pub payload: Vec<ObisValue>,
+    pub payload: V,
 }
 
-impl SmaEmMessage {
+impl<V> SmaEmMessageBase<V> {
     /// Minimum serialized length of the energymeter message.
     pub const LENGTH_MIN: usize =
         SmaPacketHeader::LENGTH + SmaEmHeader::LENGTH + SmaPacketFooter::LENGTH;
@@ -48,7 +43,9 @@ impl SmaEmMessage {
         Self::LENGTH_MIN + Self::MAX_RECORD_COUNT * ObisValue::LENGTH_MAX;
     /// Maximum number of OBIS values in the payload.
     pub const MAX_RECORD_COUNT: usize = 80;
+}
 
+impl<V: SmaContainer<ObisValue>> SmaEmMessageBase<V> {
     /// Returns total serialized message length.
     pub fn serialized_len(&self) -> usize {
         Self::LENGTH_MIN
@@ -60,7 +57,7 @@ impl SmaEmMessage {
     }
 }
 
-impl SmaSerde for SmaEmMessage {
+impl<V: SmaContainer<ObisValue>> SmaSerde for SmaEmMessageBase<V> {
     fn serialize(&self, buffer: &mut Cursor<&mut [u8]>) -> Result<()> {
         if self.payload.len() > Self::MAX_RECORD_COUNT {
             return Err(Error::PayloadTooLarge {
@@ -84,7 +81,7 @@ impl SmaSerde for SmaEmMessage {
         header.serialize(buffer)?;
         em_header.serialize(buffer)?;
 
-        for obis in &self.payload {
+        for obis in self.payload.iter() {
             obis.validate()?;
             obis.serialize(buffer)?;
         }
@@ -104,14 +101,11 @@ impl SmaSerde for SmaEmMessage {
 
         let em_header = SmaEmHeader::deserialize(buffer)?;
 
-        let mut payload = Vec::default();
+        let mut payload = V::default();
         while buffer.remaining() - padding_len >= ObisValue::LENGTH_MIN {
             let obis = ObisValue::deserialize(buffer)?;
             obis.validate()?;
 
-            #[cfg(feature = "std")]
-            payload.push(obis);
-            #[cfg(not(feature = "std"))]
             if payload.push(obis).is_err() {
                 return Err(Error::PayloadTooLarge {
                     len: payload.len() + 1,
@@ -131,28 +125,43 @@ impl SmaSerde for SmaEmMessage {
     }
 }
 
+#[cfg(feature = "std")]
+/// An [SmaEmMessageBase] using std [Vec] as storage.
+pub type SmaEmMessageStd = SmaEmMessageBase<Vec<ObisValue>>;
+#[cfg(feature = "heapless")]
+/// An [SmaEmMessageBase] using [heapless::Vec] as storage.
+pub type SmaEmMessageHeapless = SmaEmMessageBase<
+    heapless::Vec<ObisValue, { SmaEmMessageBase::<()>::MAX_RECORD_COUNT }>,
+>;
+
+#[cfg(feature = "std")]
+/// An [SmaEmMessageBase] using default storage based on selected features.
+pub type SmaEmMessage = SmaEmMessageStd;
+#[cfg(not(feature = "std"))]
+/// An [SmaEmMessageBase] using default storage based on selected features.
+pub type SmaEmMessage = SmaEmMessageHeapless;
+
 #[cfg(test)]
 mod tests {
+    use heapless::Vec;
+
     use super::*;
 
     #[test]
     fn test_sma_em_message_serialization() {
-        let message = SmaEmMessage {
+        let message = SmaEmMessageHeapless {
             src: SmaEndpoint::dummy(),
             timestamp_ms: 0xAABBCCDD,
             payload: {
                 let mut message = Vec::default();
-                #[allow(clippy::let_unit_value)]
                 let _ = message.push(ObisValue {
                     id: 0x010400,
                     value: 0x01020304,
                 });
-                #[allow(clippy::let_unit_value)]
                 let _ = message.push(ObisValue {
                     id: 0x010800,
                     value: 0x1020304050607080,
                 });
-                #[allow(clippy::let_unit_value)]
                 let _ = message.push(ObisValue {
                     id: 0x90000000,
                     value: 0x02001252,
@@ -201,22 +210,19 @@ mod tests {
             0x00, 0x00, 0x00, 0x00,
         ];
 
-        let expected = SmaEmMessage {
+        let expected = SmaEmMessageHeapless {
             src: SmaEndpoint::dummy(),
             timestamp_ms: 0xAABBCCDD,
             payload: {
                 let mut message = Vec::default();
-                #[allow(clippy::let_unit_value)]
                 let _ = message.push(ObisValue {
                     id: 0x010400,
                     value: 0x01020304,
                 });
-                #[allow(clippy::let_unit_value)]
                 let _ = message.push(ObisValue {
                     id: 0x010800,
                     value: 0x1020304050607080,
                 });
-                #[allow(clippy::let_unit_value)]
                 let _ = message.push(ObisValue {
                     id: 0x90000000,
                     value: 0x02001252,
@@ -226,7 +232,7 @@ mod tests {
         };
 
         let mut cursor = Cursor::new(&serialized[..]);
-        match SmaEmMessage::deserialize(&mut cursor) {
+        match SmaEmMessageHeapless::deserialize(&mut cursor) {
             Err(e) => panic!("SmaEmMessage deserialization failed: {e:?}"),
             Ok(message) => {
                 assert_eq!(expected, message);

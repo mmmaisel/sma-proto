@@ -25,17 +25,16 @@ use core::{
 };
 
 use byteorder_cursor::{Cursor, LittleEndian};
-#[cfg(not(feature = "std"))]
-use heapless::Vec;
 
 use super::{
     Error, Result, SmaCmdWord, SmaEndpoint, SmaInvCounter, SmaInvHeader,
     SmaInvMeterValue, SmaPacketFooter, SmaPacketHeader, SmaSerde,
 };
+use crate::SmaContainer;
 
 /// A logical GetDayData message resquest/response.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct SmaInvGetDayData {
+pub struct SmaInvGetDayDataBase<V> {
     /// Destination application/device address.
     pub dst: SmaEndpoint,
     /// Source application/device address.
@@ -48,15 +47,11 @@ pub struct SmaInvGetDayData {
     pub start_time_idx: u32,
     /// End timestamp (request) or end record number (response).
     pub end_time_idx: u32,
-    #[cfg(not(feature = "std"))]
     /// Timestamped total energy production values.
-    pub records: Vec<SmaInvMeterValue, { Self::MAX_RECORD_COUNT }>,
-    /// Timestamped total energy production values.
-    #[cfg(feature = "std")]
-    pub records: Vec<SmaInvMeterValue>,
+    pub records: V,
 }
 
-impl SmaInvGetDayData {
+impl<V> SmaInvGetDayDataBase<V> {
     pub const OPCODE: u32 = 0x020070;
     pub const LENGTH_MIN: usize = SmaPacketHeader::LENGTH
         + SmaInvHeader::LENGTH
@@ -65,13 +60,15 @@ impl SmaInvGetDayData {
     pub const LENGTH_MAX: usize =
         Self::LENGTH_MIN + Self::MAX_RECORD_COUNT * SmaInvMeterValue::LENGTH;
     pub const MAX_RECORD_COUNT: usize = 81;
+}
 
+impl<V: SmaContainer<SmaInvMeterValue>> SmaInvGetDayDataBase<V> {
     pub fn serialized_len(&self) -> usize {
         Self::LENGTH_MIN + self.records.len() * SmaInvMeterValue::LENGTH
     }
 }
 
-impl SmaSerde for SmaInvGetDayData {
+impl<V: SmaContainer<SmaInvMeterValue>> SmaSerde for SmaInvGetDayDataBase<V> {
     fn serialize(&self, buffer: &mut Cursor<&mut [u8]>) -> Result<()> {
         if self.records.len() > Self::MAX_RECORD_COUNT {
             return Err(Error::PayloadTooLarge {
@@ -115,7 +112,7 @@ impl SmaSerde for SmaInvGetDayData {
         buffer.write_u32::<LittleEndian>(self.start_time_idx);
         buffer.write_u32::<LittleEndian>(self.end_time_idx);
 
-        for record in &self.records {
+        for record in self.records.iter() {
             record.serialize(buffer)?;
         }
 
@@ -140,13 +137,10 @@ impl SmaSerde for SmaInvGetDayData {
         let start_time_idx = buffer.read_u32::<LittleEndian>();
         let end_time_idx = buffer.read_u32::<LittleEndian>();
 
-        let mut records = Vec::default();
+        let mut records = V::default();
         while buffer.remaining() - padding_len >= SmaInvMeterValue::LENGTH {
             let record = SmaInvMeterValue::deserialize(buffer)?;
 
-            #[cfg(feature = "std")]
-            records.push(record);
-            #[cfg(not(feature = "std"))]
             if records.push(record).is_err() {
                 return Err(Error::PayloadTooLarge {
                     len: records.len() + 1,
@@ -168,13 +162,36 @@ impl SmaSerde for SmaInvGetDayData {
     }
 }
 
+#[cfg(feature = "std")]
+/// An [SmaInvGetDayDataBase] message using std [Vec] as storage.
+pub type SmaInvGetDayDataStd = SmaInvGetDayDataBase<Vec<SmaInvMeterValue>>;
+#[cfg(feature = "heapless")]
+/// An [SmaInvGetDayDataBase] message using [heapless::Vec] as storage.
+pub type SmaInvGetDayDataHeapless = SmaInvGetDayDataBase<
+    heapless::Vec<
+        SmaInvMeterValue,
+        { SmaInvGetDayDataBase::<()>::MAX_RECORD_COUNT },
+    >,
+>;
+
+#[cfg(feature = "std")]
+/// An [SmaInvGetDayDataBase] message using default storage based on
+/// selected features.
+pub type SmaInvGetDayData = SmaInvGetDayDataStd;
+#[cfg(not(feature = "std"))]
+/// An [SmaInvGetDayDataBase] message using default storage based on
+/// selected features.
+pub type SmaInvGetDayData = SmaInvGetDayDataHeapless;
+
 #[cfg(test)]
 mod tests {
+    use heapless::Vec;
+
     use super::*;
 
     #[test]
     fn test_sma_inv_get_day_data_serialization() {
-        let message = SmaInvGetDayData {
+        let message = SmaInvGetDayDataHeapless {
             src: SmaEndpoint::dummy(),
             dst: SmaEndpoint {
                 susy_id: 0x5678,
@@ -190,7 +207,7 @@ mod tests {
             records: Vec::new(),
         };
 
-        let mut buffer = [0u8; SmaInvGetDayData::LENGTH_MIN];
+        let mut buffer = [0u8; SmaInvGetDayDataHeapless::LENGTH_MIN];
         let mut cursor = Cursor::new(&mut buffer[..]);
 
         if let Err(e) = message.serialize(&mut cursor) {
@@ -210,7 +227,7 @@ mod tests {
             0x00, 0xF1, 0x53, 0x65, 0x80, 0xE1, 0x4E, 0x68,
             0x00, 0x00, 0x00, 0x00,
         ];
-        assert_eq!(SmaInvGetDayData::LENGTH_MIN, cursor.position());
+        assert_eq!(SmaInvGetDayDataHeapless::LENGTH_MIN, cursor.position());
         assert_eq!(expected, buffer);
     }
 
@@ -230,7 +247,7 @@ mod tests {
             0x00, 0x00, 0x00, 0x00,
         ];
 
-        let expected = SmaInvGetDayData {
+        let expected = SmaInvGetDayDataHeapless {
             src: SmaEndpoint::dummy(),
             dst: SmaEndpoint {
                 susy_id: 0x5678,
@@ -247,11 +264,14 @@ mod tests {
         };
 
         let mut cursor = Cursor::new(&serialized[..]);
-        match SmaInvGetDayData::deserialize(&mut cursor) {
+        match SmaInvGetDayDataHeapless::deserialize(&mut cursor) {
             Err(e) => panic!("SmaGetDayData deserialization failed: {e:?}"),
             Ok(message) => {
                 assert_eq!(expected, message);
-                assert_eq!(SmaInvGetDayData::LENGTH_MIN, cursor.position());
+                assert_eq!(
+                    SmaInvGetDayDataHeapless::LENGTH_MIN,
+                    cursor.position()
+                );
             }
         }
     }
@@ -280,7 +300,7 @@ mod tests {
             0x00, 0x00, 0x00, 0x00,
         ];
 
-        let expected = SmaInvGetDayData {
+        let expected = SmaInvGetDayDataHeapless {
             dst: SmaEndpoint::dummy(),
             src: SmaEndpoint {
                 susy_id: 0x5678,
@@ -296,22 +316,18 @@ mod tests {
             end_time_idx: 8,
             records: {
                 let mut records = Vec::default();
-                #[allow(clippy::let_unit_value)]
                 let _ = records.push(SmaInvMeterValue {
                     timestamp: 1700000000,
                     energy_wh: 12752886,
                 });
-                #[allow(clippy::let_unit_value)]
                 let _ = records.push(SmaInvMeterValue {
                     timestamp: 1700000300,
                     energy_wh: 12752895,
                 });
-                #[allow(clippy::let_unit_value)]
                 let _ = records.push(SmaInvMeterValue {
                     timestamp: 1700000600,
                     energy_wh: 12752904,
                 });
-                #[allow(clippy::let_unit_value)]
                 let _ = records.push(SmaInvMeterValue {
                     timestamp: 1700000900,
                     energy_wh: 12752912,
@@ -321,12 +337,12 @@ mod tests {
         };
 
         let mut cursor = Cursor::new(&serialized[..]);
-        match SmaInvGetDayData::deserialize(&mut cursor) {
+        match SmaInvGetDayDataHeapless::deserialize(&mut cursor) {
             Err(e) => panic!("SmaCmdGetDayData deserialization failed: {e:?}"),
             Ok(message) => {
                 assert_eq!(expected, message);
                 assert_eq!(
-                    SmaInvGetDayData::LENGTH_MIN + 48,
+                    SmaInvGetDayDataHeapless::LENGTH_MIN + 48,
                     cursor.position()
                 );
             }

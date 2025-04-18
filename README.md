@@ -19,6 +19,7 @@ inverters.
 * **`std`** (default) — Remove this feature to make the library
   `no_std` compatible.
 * **`client`** — Enables a tokio based high level client.
+* **`heapless`** - Enables support for heapless vectors.
 
 ## Specification
 
