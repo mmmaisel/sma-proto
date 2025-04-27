@@ -57,9 +57,8 @@ pub enum Error {
     PayloadTooLarge { len: usize },
 }
 
-#[cfg(feature = "std")]
-impl std::fmt::Display for Error {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl core::fmt::Display for Error {
+    fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         match self {
             Self::BufferTooSmall(e) => {
                 write!(f, "{e}")
