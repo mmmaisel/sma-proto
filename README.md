@@ -13,7 +13,7 @@ inverters.
 * [x] Verify messages during de-serialization.
 * [x] Being efficient if possible.
 * [x] Simple Wireshark dissector for debugging on network layer.
-      (Lua script is located in the repository root.)
+  (Lua script is located in the repository root.)
 
 ## Rust Feature Flags
 * **`std`** (default) — Remove this feature to make the library
