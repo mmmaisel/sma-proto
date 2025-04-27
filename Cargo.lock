@@ -40,9 +40,9 @@ checksum = "1fd0f2584146f6f2ef48085050886acf353beff7305ebd1ae69500e27c67f64b"
 
 [[package]]
 name = "byteorder-cursor"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0e348e89c5cd20372c215adf25ada61c7df9fa3d7621cb09105c1014643cbba"
+checksum = "b5b19577868169b4af86cb90295c2c3a4b9f728c62cfb6cf3c96d3c411a3dca8"
 dependencies = [
  "byteorder",
 ]
