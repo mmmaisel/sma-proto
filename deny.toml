@@ -15,6 +15,7 @@ ignore = []
 [licenses]
 allow = [
     "AGPL-3.0",
+    "BSD-3-Clause",
     "MIT",
 ]
 confidence-threshold = 1.0
